@@ -64,7 +64,7 @@ getgenv().library = {
 	font,
 }
 
-local flags = espFlags
+local flags = library.flags
 local config_flags = library.config_flags
 
 local themes = {
@@ -2754,8 +2754,9 @@ function library:section(properties)
 		Name = "",
 		Position = UDim2.new(0, 0, 0, 4),
 		BorderColor3 = Color3.fromRGB(19, 19, 19),
-		Size = UDim2.new(1, 0, 1, -4),
+		Size = UDim2.new(1, 0, 0, 0),
 		BorderSizePixel = 0,
+		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = Color3.fromRGB(8, 8, 8),
 	})
 
@@ -2782,7 +2783,8 @@ function library:section(properties)
 		Name = "",
 		Position = UDim2.new(0, 2, 0, 2),
 		BorderColor3 = Color3.fromRGB(56, 56, 56),
-		Size = UDim2.new(1, -4, 1, -4),
+		Size = UDim2.new(1, -4, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = Color3.fromRGB(22, 22, 22),
 	})
 
@@ -2793,6 +2795,7 @@ function library:section(properties)
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Size = UDim2.new(1, -24, 0, 0),
 		BorderSizePixel = 0,
+		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	})
 
@@ -3378,7 +3381,7 @@ function library:toggle(properties)
 
 	cfg.set(cfg.default)
 
-	self.previous_holder = left_components
+	self.previous_holder = right_components
 	self.bottom_holder = bottom_components
 	self.right_holder = right_components
 
@@ -5813,7 +5816,7 @@ local function updatePlayerEsp(player)
 		end
 
 		local isEnem = isEnemy(player)
-		local flags = library.flags
+		local flags = espFlags
 
 		local espEnabled = isEnem and flags.enemy_esp or (not isEnem and flags.team_esp)
 		if not espEnabled then
