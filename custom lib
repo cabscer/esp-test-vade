@@ -1,7 +1,7 @@
 --[[
-    AetherLib v1.0
+    AetherLib v1.0 (Fixed)
     A modern Roblox UI Library inspired by LinoriaLib & VaderPaste
-    Features: Window, Tabs, Sections, Buttons, Toggles, Sliders, Dropdowns, 
+    Features: Window, Tabs, Sections, Buttons, Toggles, Sliders, Dropdowns,
               Textboxes, Keybinds, ColorPickers, Notifications, Animations
 --]]
 
@@ -42,7 +42,7 @@ local Utility = {}
 function Utility:Create(class, properties)
     local instance = Instance.new(class)
     for prop, value in pairs(properties) do
-n        instance[prop] = value
+        instance[prop] = value
     end
     return instance
 end
@@ -73,17 +73,6 @@ function Utility:MakeDraggable(topbar, frame)
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
-                end
-            end)
-        end
-    end)
-
-    topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local inputChanged
-            inputChanged = input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    inputChanged:Disconnect()
                 end
             end)
         end
@@ -125,12 +114,12 @@ function NotificationSystem:Notify(options)
     local title = options.Title or "Notification"
     local text = options.Text or ""
     local duration = options.Duration or 3
-    local type = options.Type or "Info" -- Info, Success, Error, Warning
+    local notifType = options.Type or "Info"
 
     local color = Theme.Accent
-    if type == "Success" then color = Theme.Success
-    elseif type == "Error" then color = Theme.Error
-    elseif type == "Warning" then color = Theme.Warning end
+    if notifType == "Success" then color = Theme.Success
+    elseif notifType == "Error" then color = Theme.Error
+    elseif notifType == "Warning" then color = Theme.Warning end
 
     local screenGui = LocalPlayer:WaitForChild("PlayerGui")
     local notifGui = screenGui:FindFirstChild("AetherLibNotifications")
@@ -217,7 +206,6 @@ function NotificationSystem:Notify(options)
         Font = Theme.FontBold
     })
 
-    -- Slide in animation
     Utility:Tween(notifFrame, {Position = UDim2.new(1, -340, 1, -100)}, 0.4)
 
     table.insert(self.ActiveNotifications, notifFrame)
@@ -241,7 +229,6 @@ function NotificationSystem:Notify(options)
     end
 
     closeBtn.MouseButton1Click:Connect(removeNotif)
-
     task.delay(duration, removeNotif)
 
     return notifFrame
@@ -263,15 +250,14 @@ function AetherLib:CreateWindow(options)
     local accentColor = options.AccentColor or Theme.Accent
     Theme.Accent = accentColor
 
-    -- ScreenGui
+    local parentGui = game.CoreGui or LocalPlayer:WaitForChild("PlayerGui")
     local screenGui = Utility:Create("ScreenGui", {
-        Name = "AetherLib_" .. HttpService:GenerateGUID(false),
-        Parent = game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"),
+        Name = "AetherLib_" .. tostring(math.random(100000, 999999)),
+        Parent = parentGui,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         ResetOnSpawn = false
     })
 
-    -- Main Window
     local mainFrame = Utility:Create("Frame", {
         Name = "Main",
         Parent = screenGui,
@@ -293,7 +279,6 @@ function AetherLib:CreateWindow(options)
         Parent = mainFrame
     })
 
-    -- Shadow
     local shadow = Utility:Create("ImageLabel", {
         Name = "Shadow",
         Parent = mainFrame,
@@ -309,7 +294,6 @@ function AetherLib:CreateWindow(options)
         ZIndex = -1
     })
 
-    -- Topbar
     local topbar = Utility:Create("Frame", {
         Name = "Topbar",
         Parent = mainFrame,
@@ -332,7 +316,6 @@ function AetherLib:CreateWindow(options)
         BorderSizePixel = 0
     })
 
-    -- Accent line
     local accentLine = Utility:Create("Frame", {
         Name = "AccentLine",
         Parent = topbar,
@@ -342,7 +325,6 @@ function AetherLib:CreateWindow(options)
         BorderSizePixel = 0
     })
 
-    -- Title
     local titleLabel = Utility:Create("TextLabel", {
         Name = "Title",
         Parent = topbar,
@@ -361,7 +343,6 @@ function AetherLib:CreateWindow(options)
         titleLabel.RichText = true
     end
 
-    -- Window Controls
     local minimizeBtn = Utility:Create("TextButton", {
         Name = "Minimize",
         Parent = topbar,
@@ -386,7 +367,6 @@ function AetherLib:CreateWindow(options)
         Font = Theme.FontBold
     })
 
-    -- Tab Container
     local tabContainer = Utility:Create("Frame", {
         Name = "TabContainer",
         Parent = mainFrame,
@@ -415,7 +395,6 @@ function AetherLib:CreateWindow(options)
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    -- Content Container
     local contentContainer = Utility:Create("Frame", {
         Name = "ContentContainer",
         Parent = mainFrame,
@@ -430,7 +409,6 @@ function AetherLib:CreateWindow(options)
         Parent = contentContainer
     })
 
-    -- Separator
     local separator = Utility:Create("Frame", {
         Name = "Separator",
         Parent = mainFrame,
@@ -440,13 +418,9 @@ function AetherLib:CreateWindow(options)
         BorderSizePixel = 0
     })
 
-    -- Make draggable
     Utility:MakeDraggable(topbar, mainFrame)
-
-    -- Animation: Open window
     Utility:Tween(mainFrame, {Size = size}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
-    -- Window Controls functionality
     local minimized = false
     minimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -474,7 +448,6 @@ function AetherLib:CreateWindow(options)
         end)
     end)
 
-    -- Hover effects for buttons
     minimizeBtn.MouseEnter:Connect(function()
         Utility:Tween(minimizeBtn, {TextColor3 = Theme.Text}, 0.2)
     end)
@@ -492,12 +465,11 @@ function AetherLib:CreateWindow(options)
     Window.Tabs = {}
     Window.CurrentTab = nil
 
-    function Window:AddTab(options)
-        options = options or {}
-        local tabName = options.Name or "Tab"
-        local tabIcon = options.Icon or "" -- rbxassetid
+    function Window:AddTab(tabOptions)
+        tabOptions = tabOptions or {}
+        local tabName = tabOptions.Name or "Tab"
+        local tabIcon = tabOptions.Icon or ""
 
-        -- Tab Button
         local tabBtn = Utility:Create("TextButton", {
             Name = tabName .. "_Tab",
             Parent = tabList,
@@ -539,7 +511,6 @@ function AetherLib:CreateWindow(options)
             TextXAlignment = Enum.TextXAlignment.Left
         })
 
-        -- Content Frame
         local contentFrame = Utility:Create("ScrollingFrame", {
             Name = tabName .. "_Content",
             Parent = contentContainer,
@@ -567,9 +538,17 @@ function AetherLib:CreateWindow(options)
             PaddingBottom = UDim.new(0, 10)
         })
 
-        -- Tab functionality
+        local Tab = {
+            Name = tabName,
+            Button = tabBtn,
+            Content = contentFrame,
+            Label = tabLabel,
+            Icon = tabIconImg,
+            Sections = {}
+        }
+
         tabBtn.MouseButton1Click:Connect(function()
-            if Window.CurrentTab then
+            if Window.CurrentTab and Window.CurrentTab ~= Tab then
                 Window.CurrentTab.Content.Visible = false
                 Utility:Tween(Window.CurrentTab.Button, {BackgroundColor3 = Theme.Element}, 0.2)
                 Window.CurrentTab.Label.TextColor3 = Theme.TextDark
@@ -599,18 +578,8 @@ function AetherLib:CreateWindow(options)
             end
         end)
 
-        local Tab = {
-            Name = tabName,
-            Button = tabBtn,
-            Content = contentFrame,
-            Label = tabLabel,
-            Icon = tabIconImg,
-            Sections = {}
-        }
-
         table.insert(Window.Tabs, Tab)
 
-        -- Auto-select first tab
         if #Window.Tabs == 1 then
             Window.CurrentTab = Tab
             contentFrame.Visible = true
@@ -621,9 +590,9 @@ function AetherLib:CreateWindow(options)
             end
         end
 
-        function Tab:AddSection(options)
-            options = options or {}
-            local sectionName = options.Name or "Section"
+        function Tab:AddSection(sectionOptions)
+            sectionOptions = sectionOptions or {}
+            local sectionName = sectionOptions.Name or "Section"
 
             local sectionFrame = Utility:Create("Frame", {
                 Name = sectionName .. "_Section",
@@ -682,11 +651,10 @@ function AetherLib:CreateWindow(options)
 
             table.insert(Tab.Sections, Section)
 
-            -- Element creation functions
-            function Section:AddButton(options)
-                options = options or {}
-                local btnText = options.Text or "Button"
-                local callback = options.Callback or function() end
+            function Section:AddButton(btnOptions)
+                btnOptions = btnOptions or {}
+                local btnText = btnOptions.Text or "Button"
+                local btnCallback = btnOptions.Callback or function() end
 
                 local btn = Utility:Create("TextButton", {
                     Name = "Button",
@@ -723,17 +691,17 @@ function AetherLib:CreateWindow(options)
                 end)
 
                 btn.MouseButton1Click:Connect(function()
-                    callback()
+                    btnCallback()
                 end)
 
                 return btn
             end
 
-            function Section:AddToggle(options)
-                options = options or {}
-                local toggleText = options.Text or "Toggle"
-                local default = options.Default or false
-                local callback = options.Callback or function() end
+            function Section:AddToggle(toggleOptions)
+                toggleOptions = toggleOptions or {}
+                local toggleText = toggleOptions.Text or "Toggle"
+                local default = toggleOptions.Default or false
+                local toggleCallback = toggleOptions.Callback or function() end
 
                 local toggleFrame = Utility:Create("Frame", {
                     Name = "Toggle",
@@ -796,12 +764,11 @@ function AetherLib:CreateWindow(options)
                         Utility:Tween(toggleBtn, {BackgroundColor3 = Theme.Element}, 0.2)
                         Utility:Tween(toggleCircle, {Position = UDim2.new(0, 2, 0.5, -8)}, 0.2)
                     end
-                    callback(enabled)
+                    toggleCallback(enabled)
                 end
 
                 toggleBtn.MouseButton1Click:Connect(updateToggle)
 
-                -- Return controller
                 local ToggleObj = {}
                 function ToggleObj:SetValue(val)
                     if val ~= enabled then
@@ -813,7 +780,7 @@ function AetherLib:CreateWindow(options)
                             Utility:Tween(toggleBtn, {BackgroundColor3 = Theme.Element}, 0.2)
                             Utility:Tween(toggleCircle, {Position = UDim2.new(0, 2, 0.5, -8)}, 0.2)
                         end
-                        callback(enabled)
+                        toggleCallback(enabled)
                     end
                 end
                 function ToggleObj:GetValue()
@@ -823,15 +790,15 @@ function AetherLib:CreateWindow(options)
                 return ToggleObj
             end
 
-            function Section:AddSlider(options)
-                options = options or {}
-                local sliderText = options.Text or "Slider"
-                local min = options.Min or 0
-                local max = options.Max or 100
-                local default = options.Default or min
-                local increment = options.Increment or 1
-                local suffix = options.Suffix or ""
-                local callback = options.Callback or function() end
+            function Section:AddSlider(sliderOptions)
+                sliderOptions = sliderOptions or {}
+                local sliderText = sliderOptions.Text or "Slider"
+                local min = sliderOptions.Min or 0
+                local max = sliderOptions.Max or 100
+                local default = sliderOptions.Default or min
+                local increment = sliderOptions.Increment or 1
+                local suffix = sliderOptions.Suffix or ""
+                local sliderCallback = sliderOptions.Callback or function() end
 
                 local sliderFrame = Utility:Create("Frame", {
                     Name = "Slider",
@@ -922,7 +889,7 @@ function AetherLib:CreateWindow(options)
                     sliderFill.Size = UDim2.new(scale, 0, 1, 0)
                     sliderKnob.Position = UDim2.new(scale, -7, 0.5, -7)
                     valueLabel.Text = tostring(Utility:Round(val, 2)) .. suffix
-                    callback(val)
+                    sliderCallback(val)
                 end
 
                 sliderKnob.InputBegan:Connect(function(input)
@@ -959,7 +926,7 @@ function AetherLib:CreateWindow(options)
                     sliderFill.Size = UDim2.new(scale, 0, 1, 0)
                     sliderKnob.Position = UDim2.new(scale, -7, 0.5, -7)
                     valueLabel.Text = tostring(Utility:Round(val, 2)) .. suffix
-                    callback(val)
+                    sliderCallback(val)
                 end
                 function SliderObj:GetValue()
                     return currentValue
@@ -968,13 +935,13 @@ function AetherLib:CreateWindow(options)
                 return SliderObj
             end
 
-            function Section:AddDropdown(options)
-                options = options or {}
-                local dropdownText = options.Text or "Dropdown"
-                local values = options.Values or {}
-                local default = options.Default or nil
-                local multi = options.Multi or false
-                local callback = options.Callback or function() end
+            function Section:AddDropdown(dropdownOptions)
+                dropdownOptions = dropdownOptions or {}
+                local dropdownText = dropdownOptions.Text or "Dropdown"
+                local values = dropdownOptions.Values or {}
+                local default = dropdownOptions.Default or nil
+                local multi = dropdownOptions.Multi or false
+                local dropdownCallback = dropdownOptions.Callback or function() end
 
                 local dropdownFrame = Utility:Create("Frame", {
                     Name = "Dropdown",
@@ -1150,7 +1117,7 @@ function AetherLib:CreateWindow(options)
                                 optBtn.Font = Theme.FontBold
                             end
                             updateText()
-                            callback(multi and selectedValues or selectedValues[1])
+                            dropdownCallback(multi and selectedValues or selectedValues[1])
                         end)
 
                         table.insert(optionButtons, optBtn)
@@ -1184,7 +1151,7 @@ function AetherLib:CreateWindow(options)
                     end
                     updateText()
                     createOptions()
-                    callback(multi and selectedValues or selectedValues[1])
+                    dropdownCallback(multi and selectedValues or selectedValues[1])
                 end
                 function DropdownObj:GetValue()
                     return multi and selectedValues or selectedValues[1]
@@ -1201,12 +1168,12 @@ function AetherLib:CreateWindow(options)
                 return DropdownObj
             end
 
-            function Section:AddTextbox(options)
-                options = options or {}
-                local boxText = options.Text or "Textbox"
-                local default = options.Default or ""
-                local placeholder = options.Placeholder or "Enter text..."
-                local callback = options.Callback or function() end
+            function Section:AddTextbox(boxOptions)
+                boxOptions = boxOptions or {}
+                local boxText = boxOptions.Text or "Textbox"
+                local default = boxOptions.Default or ""
+                local placeholder = boxOptions.Placeholder or "Enter text..."
+                local boxCallback = boxOptions.Callback or function() end
 
                 local boxFrame = Utility:Create("Frame", {
                     Name = "Textbox",
@@ -1262,13 +1229,13 @@ function AetherLib:CreateWindow(options)
 
                 textBox.FocusLost:Connect(function(enterPressed)
                     Utility:Tween(textBox, {BackgroundColor3 = Theme.Element}, 0.2)
-                    callback(textBox.Text, enterPressed)
+                    boxCallback(textBox.Text, enterPressed)
                 end)
 
                 local TextboxObj = {}
                 function TextboxObj:SetValue(val)
                     textBox.Text = tostring(val)
-                    callback(textBox.Text, false)
+                    boxCallback(textBox.Text, false)
                 end
                 function TextboxObj:GetValue()
                     return textBox.Text
@@ -1277,11 +1244,11 @@ function AetherLib:CreateWindow(options)
                 return TextboxObj
             end
 
-            function Section:AddKeybind(options)
-                options = options or {}
-                local bindText = options.Text or "Keybind"
-                local default = options.Default or nil
-                local callback = options.Callback or function() end
+            function Section:AddKeybind(bindOptions)
+                bindOptions = bindOptions or {}
+                local bindText = bindOptions.Text or "Keybind"
+                local default = bindOptions.Default or nil
+                local bindCallback = bindOptions.Callback or function() end
 
                 local bindFrame = Utility:Create("Frame", {
                     Name = "Keybind",
@@ -1343,10 +1310,10 @@ function AetherLib:CreateWindow(options)
                             end
                             listening = false
                             Utility:Tween(bindBtn, {BackgroundColor3 = Theme.Element}, 0.2)
-                            callback(currentKey)
+                            bindCallback(currentKey)
                         end
                     elseif currentKey and input.KeyCode == currentKey and not gameProcessed then
-                        callback(currentKey)
+                        bindCallback(currentKey)
                     end
                 end)
 
@@ -1354,7 +1321,7 @@ function AetherLib:CreateWindow(options)
                 function KeybindObj:SetValue(key)
                     currentKey = key
                     bindBtn.Text = key and key.Name or "None"
-                    callback(currentKey)
+                    bindCallback(currentKey)
                 end
                 function KeybindObj:GetValue()
                     return currentKey
@@ -1363,11 +1330,11 @@ function AetherLib:CreateWindow(options)
                 return KeybindObj
             end
 
-            function Section:AddColorpicker(options)
-                options = options or {}
-                local pickerText = options.Text or "Colorpicker"
-                local default = options.Default or Color3.fromRGB(255, 255, 255)
-                local callback = options.Callback or function() end
+            function Section:AddColorpicker(pickerOptions)
+                pickerOptions = pickerOptions or {}
+                local pickerText = pickerOptions.Text or "Colorpicker"
+                local default = pickerOptions.Default or Color3.fromRGB(255, 255, 255)
+                local pickerCallback = pickerOptions.Callback or function() end
 
                 local pickerFrame = Utility:Create("Frame", {
                     Name = "Colorpicker",
@@ -1416,7 +1383,6 @@ function AetherLib:CreateWindow(options)
 
                 colorDisplay.MouseButton1Click:Connect(function()
                     pickerOpen = not pickerOpen
-                    -- Simple color picker toggle (would expand to full picker in production)
                     NotificationSystem:Notify({
                         Title = "Color Picker",
                         Text = "Color picker UI would expand here. Current: " .. tostring(currentColor),
@@ -1428,7 +1394,7 @@ function AetherLib:CreateWindow(options)
                 function ColorpickerObj:SetValue(color)
                     currentColor = color
                     colorDisplay.BackgroundColor3 = color
-                    callback(color)
+                    pickerCallback(color)
                 end
                 function ColorpickerObj:GetValue()
                     return currentColor
@@ -1437,9 +1403,9 @@ function AetherLib:CreateWindow(options)
                 return ColorpickerObj
             end
 
-            function Section:AddLabel(options)
-                options = options or {}
-                local labelText = options.Text or "Label"
+            function Section:AddLabel(labelOptions)
+                labelOptions = labelOptions or {}
+                local labelText = labelOptions.Text or "Label"
 
                 local label = Utility:Create("TextLabel", {
                     Name = "Label",
@@ -1447,14 +1413,14 @@ function AetherLib:CreateWindow(options)
                     Size = UDim2.new(1, 0, 0, 20),
                     BackgroundTransparency = 1,
                     Text = labelText,
-                    TextColor3 = options.Color or Theme.TextDark,
-                    TextSize = options.Size or 12,
-                    Font = options.Bold and Theme.FontBold or Theme.Font,
+                    TextColor3 = labelOptions.Color or Theme.TextDark,
+                    TextSize = labelOptions.Size or 12,
+                    Font = labelOptions.Bold and Theme.FontBold or Theme.Font,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     TextWrapped = true
                 })
 
-                if options.Center then
+                if labelOptions.Center then
                     label.TextXAlignment = Enum.TextXAlignment.Center
                 end
 
@@ -1486,31 +1452,29 @@ function AetherLib:CreateWindow(options)
         return Tab
     end
 
-    -- Global notification access
-    function Window:Notify(options)
-        return NotificationSystem:Notify(options)
+    function Window:Notify(notifyOptions)
+        return NotificationSystem:Notify(notifyOptions)
     end
 
     function Window:SetAccent(color)
         Theme.Accent = color
         accentLine.BackgroundColor3 = color
-        -- Would update all accent-colored elements
     end
 
     return Window
 end
 
---// Key System (Optional)
-function AetherLib:CreateKeySystem(options)
-    options = options or {}
-    local title = options.Title or "Key System"
-    local note = options.Note or "Enter your key to continue"
-    local callback = options.Callback or function() end
-    local verifyCallback = options.VerifyCallback or function(key) return true end
+function AetherLib:CreateKeySystem(keyOptions)
+    keyOptions = keyOptions or {}
+    local keyTitle = keyOptions.Title or "Key System"
+    local note = keyOptions.Note or "Enter your key to continue"
+    local keyCallback = keyOptions.Callback or function() end
+    local verifyCallback = keyOptions.VerifyCallback or function(key) return true end
 
+    local parentGui = game.CoreGui or LocalPlayer:WaitForChild("PlayerGui")
     local screenGui = Utility:Create("ScreenGui", {
         Name = "AetherLibKeySystem",
-        Parent = game.CoreGui or LocalPlayer:WaitForChild("PlayerGui"),
+        Parent = parentGui,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         ResetOnSpawn = false
     })
@@ -1544,19 +1508,19 @@ function AetherLib:CreateKeySystem(options)
         Parent = keyFrame
     })
 
-    local keyTitle = Utility:Create("TextLabel", {
+    local keyTitleLabel = Utility:Create("TextLabel", {
         Name = "Title",
         Parent = keyFrame,
         Size = UDim2.new(1, 0, 0, 30),
         Position = UDim2.new(0, 0, 0, 15),
         BackgroundTransparency = 1,
-        Text = title,
+        Text = keyTitle,
         TextColor3 = Theme.Text,
         TextSize = 18,
         Font = Theme.FontBold
     })
 
-    local keyNote = Utility:Create("TextLabel", {
+    local keyNoteLabel = Utility:Create("TextLabel", {
         Name = "Note",
         Parent = keyFrame,
         Size = UDim2.new(1, -40, 0, 20),
@@ -1643,7 +1607,7 @@ function AetherLib:CreateKeySystem(options)
             task.delay(0.3, function()
                 screenGui:Destroy()
             end)
-            callback(key)
+            keyCallback(key)
         else
             statusLabel.Text = "Invalid key"
             Utility:Tween(keyInput, {BackgroundColor3 = Theme.Error}, 0.1)
@@ -1658,7 +1622,6 @@ function AetherLib:CreateKeySystem(options)
     end)
 end
 
---// Expose Theme for customization
 AetherLib.Theme = Theme
 AetherLib.Utility = Utility
 
