@@ -64,7 +64,7 @@ getgenv().library = {
 	font,
 }
 
-local flags = library.flags
+local flags = espFlags
 local config_flags = library.config_flags
 
 local themes = {
@@ -5441,6 +5441,24 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
+--// Flag Helpers (colorpicker returns {Color=..., Transparency=...})
+local espFlags = setmetatable({}, {
+    __index = function(_, k)
+        local v = library.flags[k]
+        if type(v) == "table" and v.Color then
+            return v.Color
+        end
+        return v
+    end
+})
+local function flagAlpha(name)
+    local v = library.flags[name]
+    if type(v) == "table" and type(v.Transparency) == "number" then
+        return v.Transparency
+    end
+    return 1
+end
+
 
 local localPlayer = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -5884,7 +5902,8 @@ local function updatePlayerEsp(player)
 		local filledEnabled = isEnem and flags.enemy_filledbox or (not isEnem and flags.team_filledbox)
 		local boxColor = isEnem and flags.enemy_boxcolor or flags.team_boxcolor
 		local filledColor = isEnem and flags.enemy_filledboxcolor or flags.team_filledboxcolor
-		local filledTrans = isEnem and (flags.enemy_filledboxcolor and flags.enemy_filledboxcolor.a and 1 - flags.enemy_filledboxcolor.a or 0.2) or (flags.team_filledboxcolor and flags.team_filledboxcolor.a and 1 - flags.team_filledboxcolor.a or 0.2)
+		local filledAlpha = isEnem and flagAlpha("enemy_filledboxcolor") or flagAlpha("team_filledboxcolor")
+		local filledTrans = 1 - filledAlpha
 
 		if boxEnabled then
 			esp.boxOutline.Size = boxSize
@@ -6159,7 +6178,7 @@ local function updatePlayerEsp(player)
 				esp.snapline.From = mousePos
 				esp.snapline.To = Vector2.new(pos.X, pos.Y)
 				esp.snapline.Color = isEnem and flags.enemy_snaplinescolor or Color3.new(1,1,1)
-				esp.snapline.Transparency = isEnem and (flags.enemy_snaplinescolor and flags.enemy_snaplinescolor.a or 1) or 1
+				esp.snapline.Transparency = isEnem and (1 - flagAlpha("enemy_snaplinescolor")) or 0
 				esp.snapline.Visible = true
 			else tracerY = camera.ViewportSize.Y end
 
@@ -6167,7 +6186,7 @@ local function updatePlayerEsp(player)
 				esp.snapline.From = Vector2.new(camera.ViewportSize.X / 2, tracerY)
 				esp.snapline.To = Vector2.new(pos.X, pos.Y)
 				esp.snapline.Color = isEnem and flags.enemy_snaplinescolor or Color3.new(1,1,1)
-				esp.snapline.Transparency = isEnem and (flags.enemy_snaplinescolor and flags.enemy_snaplinescolor.a or 1) or 1
+				esp.snapline.Transparency = isEnem and (1 - flagAlpha("enemy_snaplinescolor")) or 0
 				esp.snapline.Visible = true
 			end
 		else
@@ -6231,7 +6250,7 @@ end
 
 --// Dropped Items ESP
 local function updateDroppedEsp()
-	local flags = library.flags
+	local flags = espFlags
 	local grenadeWarn = flags.dropped_grenadewarning
 	local grenadeLines = flags.dropped_grenadelines
 	local weaponNames = flags.dropped_weaponnames
