@@ -2796,6 +2796,7 @@ function library:section(properties)
 		Size = UDim2.new(1, -24, 0, 0),
 		BorderSizePixel = 0,
 		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	})
 
@@ -2811,6 +2812,12 @@ function library:section(properties)
 		Parent = section,
 		Name = "",
 		PaddingBottom = UDim.new(0, 13),
+	})
+
+	local section_inline_pad = library:create("UIPadding", {
+		Parent = section_inline,
+		Name = "",
+		PaddingBottom = UDim.new(0, 4),
 	})
 	--
 
@@ -3263,7 +3270,7 @@ function library:toggle(properties)
 		BorderSizePixel = 0,
 		BackgroundTransparency = 1,
 		TextXAlignment = Enum.TextXAlignment.Left,
-		Size = UDim2.new(1, -26, 0, 12),
+		Size = UDim2.new(1, 0, 0, 12),
 		ZIndex = 1,
 		TextSize = 12,
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -3272,10 +3279,12 @@ function library:toggle(properties)
 	local right_components = library:create("Frame", {
 		Parent = object,
 		Name = "",
-		Position = UDim2.new(1, 15, 0, 1),
+		Position = UDim2.new(1, 4, 0, 1),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Size = UDim2.new(0, 0, 1, 0),
 		BorderSizePixel = 0,
+		AutomaticSize = Enum.AutomaticSize.X,
+		BackgroundTransparency = 1,
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	})
 
@@ -3291,7 +3300,7 @@ function library:toggle(properties)
 	local icon_inline = library:create("TextButton", {
 		Parent = object,
 		Name = "",
-		Position = UDim2.new(0, -15, 0, 1),
+		Position = UDim2.new(0, -18, 0, 1),
 		BorderColor3 = Color3.fromRGB(19, 19, 19),
 		Size = UDim2.new(0, 10, 0, 10),
 		BorderSizePixel = 0,
